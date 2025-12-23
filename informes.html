@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Informe Técnico - Soporte</title>
+
+  <style>
+    :root{
+      --bg:#070a12;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.09);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --accent:#6df2ff;
+      --accent2:#8b5cff;
+      --ok:#39ff88;
+      --warn:#ffcc66;
+      --bad:#ff4d6d;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(109,242,255,.15), transparent 60%),
+                  radial-gradient(900px 700px at 80% 25%, rgba(139,92,255,.14), transparent 55%),
+                  linear-gradient(180deg, #050712, #070a12 30%, #050712);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* fondo grid tech */
+    .grid-bg::before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(circle at 50% 20%, rgba(0,0,0,1), rgba(0,0,0,.2) 55%, transparent 80%);
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    header{
+      position:sticky; top:0; z-index:5;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(7,10,18,.75), rgba(7,10,18,.45));
+      border-bottom:1px solid var(--stroke);
+    }
+    .wrap{ max-width: 1200px; margin:0 auto; padding: 18px 18px; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:40px; height:40px; border-radius: 12px;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(109,242,255,.9), transparent 60%),
+        radial-gradient(22px 22px at 70% 70%, rgba(139,92,255,.8), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    .title h1{
+      margin:0; font-size: 16px; letter-spacing:.6px;
+    }
+    .title p{
+      margin:2px 0 0; color: var(--muted); font-size: 12px; font-family: var(--mono);
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    button{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.16);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      display:inline-flex; align-items:center; gap:10px;
+      font-weight: 600;
+    }
+    button:hover{
+      transform: translateY(-1px);
+      border-color: rgba(109,242,255,.35);
+      background: linear-gradient(180deg, rgba(109,242,255,.10), rgba(255,255,255,.04));
+    }
+    button.secondary:hover{
+      border-color: rgba(139,92,255,.35);
+      background: linear-gradient(180deg, rgba(139,92,255,.10), rgba(255,255,255,.04));
+    }
+    button.ghost{
+      background: transparent;
+      box-shadow:none;
+    }
+    button.ghost:hover{
+      background: rgba(255,255,255,.05);
+    }
+    .pill{
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      display:flex; gap:8px; align-items:center;
+    }
+    .dot{ width:8px; height:8px; border-radius:999px; background: var(--accent); box-shadow: 0 0 18px rgba(109,242,255,.6); }
+
+    main .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 16px;
+      padding: 16px 0 26px;
+    }
+
+    @media (max-width: 980px){
+      main .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px 14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.12);
+    }
+    .card .head h2{
+      margin:0; font-size: 13px; letter-spacing: .6px; text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .card .body{ padding: 14px; }
+
+    .fields{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 700px){
+      .fields{ grid-template-columns: 1fr; }
+    }
+    label{
+      font-size: 12px;
+      color: var(--muted);
+      display:block;
+      margin-bottom:6px;
+      font-family: var(--mono);
+    }
+    input, select, textarea{
+      width:100%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s ease;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(109,242,255,.45);
+      box-shadow: 0 0 0 3px rgba(109,242,255,.12);
+    }
+    textarea{ min-height: 88px; resize: vertical; }
+
+    .row{ display:flex; gap:10px; align-items:flex-end; }
+    .row > *{ flex:1; }
+
+    .mini{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .chip{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      cursor:pointer;
+    }
+    .chip b{
+      font-family: var(--mono);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .status-dot{ width:10px; height:10px; border-radius:999px; }
+    .ok{ background: var(--ok); box-shadow: 0 0 14px rgba(57,255,136,.5); }
+    .warn{ background: var(--warn); box-shadow: 0 0 14px rgba(255,204,102,.4); }
+    .bad{ background: var(--bad); box-shadow: 0 0 14px rgba(255,77,109,.45); }
+
+    .list{
+      display:flex; flex-direction:column; gap:8px; margin-top:10px;
+    }
+    .item{
+      display:flex; gap:10px; align-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.16);
+      padding: 10px 12px;
+      border-radius: 14px;
+    }
+    .item .meta{
+      flex:1;
+      min-width:0;
+    }
+    .item .meta .t{
+      font-weight:700; font-size: 13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .item .meta .s{
+      font-size: 12px; color: var(--muted); font-family: var(--mono);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .icon{
+      width:28px; height:28px; border-radius:10px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid; place-items:center;
+      color: rgba(255,255,255,.88);
+      font-family: var(--mono);
+      font-weight:800;
+    }
+    .x{
+      width:34px;
+      background: transparent;
+      box-shadow:none;
+      border:1px solid rgba(255,255,255,.12);
+      padding: 10px;
+      justify-content:center;
+    }
+    .x:hover{ border-color: rgba(255,77,109,.45); background: rgba(255,77,109,.08); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 700px){
+      .split{ grid-template-columns: 1fr; }
+    }
+    .thumbs{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .thumb{
+      width: 150px; height: 110px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+      position:relative;
+    }
+    .thumb img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .thumb span{
+      position:absolute; left:10px; top:10px;
+      background: rgba(0,0,0,.55);
+      border:1px solid rgba(255,255,255,.14);
+      padding:4px 8px;
+      border-radius:999px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: rgba(255,255,255,.85);
+    }
+
+    /* Preview “informe” */
+    .report{
+      background: #0b1020;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .report .rhead{
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding-bottom:12px; margin-bottom:12px;
+    }
+    .badge{
+      font-family: var(--mono);
+      font-size: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: rgba(255,255,255,.82);
+      background: rgba(255,255,255,.06);
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .badge .b{
+      width:10px; height:10px; border-radius:999px;
+    }
+    .rtitle{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.6px;
+      text-transform: uppercase;
+    }
+    .sub{
+      margin:4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+    .rgrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 700px){
+      .rgrid{ grid-template-columns: 1fr; }
+    }
+    .kv{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding: 10px 12px;
+      min-height: 54px;
+    }
+    .kv .k{
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      letter-spacing: .3px;
+    }
+    .kv .v{
+      margin-top:4px;
+      font-weight: 700;
+      font-size: 13px;
+      word-break: break-word;
+    }
+    .section{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .section h3{
+      margin:0 0 8px;
+      font-size: 12px;
+      letter-spacing:.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+    }
+    .section p, .section li{
+      margin:0;
+      color: rgba(255,255,255,.86);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+    .section ul{ margin:0; padding-left: 16px; display:flex; flex-direction:column; gap:6px; }
+
+    /* Print styling */
+    @media print{
+      header, .no-print { display:none !important; }
+      body{ background:#fff !important; color:#000 !important; }
+      .grid-bg::before{ display:none !important; }
+      .wrap{ max-width: 100%; padding: 0; }
+      main .grid{ grid-template-columns: 1fr; }
+      .card{ box-shadow:none; border: none; }
+      .report{ border: none; background:#fff; }
+      .kv, .section{ border:1px solid #ddd; background:#fff; }
+      .badge{ border:1px solid #ddd; background:#f7f7f7; color:#000; }
+      .sub, label{ color:#333 !important; }
+    }
+  </style>
+</head>
+
+<body class="grid-bg">
+  <header class="no-print">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo"></div>
+          <div class="title">
+            <h1>Tech Support Report Builder</h1>
+            <p id="clock">SYS · READY</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div class="pill"><span class="dot"></span><span id="sys">LIVE · Preview</span></div>
+          <button class="secondary" id="btnDemo">⚡ Cargar demo</button>
+          <button id="btnPrint">🖨️ Generar PDF</button>
+          <button class="ghost" id="btnClear">🧹 Limpiar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid">
+        <!-- Form -->
+        <section class="card">
+          <div class="head">
+            <h2>Entrada de datos</h2>
+            <div class="mini">
+              <div class="chip" data-status="Operativo"><span class="status-dot ok"></span><b>Operativo</b></div>
+              <div class="chip" data-status="Observación"><span class="status-dot warn"></span><b>Observación</b></div>
+              <div class="chip" data-status="Crítico"><span class="status-dot bad"></span><b>Crítico</b></div>
+            </div>
+          </div>
+
+          <div class="body">
+            <div class="fields">
+              <div>
+                <label>ID Visita</label>
+                <input id="id" placeholder="VS-2025-0001" />
+              </div>
+              <div>
+                <label>Fecha y hora</label>
+                <input id="fecha" type="datetime-local" />
+              </div>
+
+              <div>
+                <label>Cliente</label>
+                <input id="cliente" placeholder="Empresa / Cliente" />
+              </div>
+              <div>
+                <label>Sede</label>
+                <input id="sede" placeholder="Sede / Tienda / Oficina" />
+              </div>
+
+              <div>
+                <label>Contacto</label>
+                <input id="contacto" placeholder="Nombre + cargo + teléfono" />
+              </div>
+              <div>
+                <label>Técnico</label>
+                <input id="tecnico" placeholder="Nombre del técnico" />
+              </div>
+
+              <div>
+                <label>Equipo / Sistema</label>
+                <input id="equipo" placeholder="Pantalla LED / Player / Controlador" />
+              </div>
+              <div>
+                <label>Serie / Asset</label>
+                <input id="serie" placeholder="N° serie / Código activo" />
+              </div>
+
+              <div style="grid-column: 1 / -1;">
+                <label>Motivo de visita</label>
+                <input id="motivo" placeholder="Ej: Pantalla sin señal / parpadeo / configuración" />
+              </div>
+
+              <div style="grid-column: 1 / -1;">
+                <label>Diagnóstico</label>
+                <textarea id="diagnostico" placeholder="Describe causa, evidencia, pruebas realizadas..."></textarea>
+              </div>
+
+              <div style="grid-column: 1 / -1;">
+                <label>Recomendaciones / Pendientes</label>
+                <textarea id="recomendaciones" placeholder="Acciones sugeridas, repuestos requeridos, seguimiento..."></textarea>
+              </div>
+
+              <div>
+                <label>Estado final</label>
+                <select id="estado">
+                  <option>Operativo</option>
+                  <option>Observación</option>
+                  <option>Crítico</option>
+                </select>
+              </div>
+              <div>
+                <label>Tiempo de atención</label>
+                <input id="tiempo" placeholder="Ej: 1h 20m" />
+              </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid rgba(255,255,255,.10); margin:14px 0;">
+
+            <!-- Acciones -->
+            <div class="row">
+              <div>
+                <label>Acción realizada (agregar)</label>
+                <input id="accionTxt" placeholder="Ej: Reinicio controlador, cambio cable LAN..." />
+              </div>
+              <button id="addAccion" class="secondary">➕ Agregar</button>
+            </div>
+            <div class="list" id="accionesList"></div>
+
+            <hr style="border:0;border-top:1px solid rgba(255,255,255,.10); margin:14px 0;">
+
+            <!-- Materiales -->
+            <div class="row">
+              <div>
+                <label>Material/Repuesto</label>
+                <input id="matNom" placeholder="Ej: Cable LAN Cat6 / Fuente / Módulo" />
+              </div>
+              <div>
+                <label>Cantidad</label>
+                <input id="matCant" type="number" min="1" value="1"/>
+              </div>
+              <button id="addMat">➕</button>
+            </div>
+            <div class="list" id="matList"></div>
+
+            <hr style="border:0;border-top:1px solid rgba(255,255,255,.10); margin:14px 0;">
+
+            <!-- Fotos -->
+            <div class="split">
+              <div>
+                <label>Foto (Antes)</label>
+                <input id="fotoAntes" type="file" accept="image/*" />
+              </div>
+              <div>
+                <label>Foto (Después)</label>
+                <input id="fotoDespues" type="file" accept="image/*" />
+              </div>
+            </div>
+            <div class="thumbs" id="thumbs"></div>
+          </div>
+        </section>
+
+        <!-- Preview -->
+        <section class="card">
+          <div class="head">
+            <h2>Preview del informe</h2>
+            <div class="pill"><span class="dot"></span><span id="autosave">SYNC · Local</span></div>
+          </div>
+          <div class="body">
+            <div class="report" id="report">
+              <div class="rhead">
+                <div>
+                  <h2 class="rtitle">INFORME TÉCNICO DE SOPORTE</h2>
+                  <p class="sub" id="rSub">—</p>
+                </div>
+                <div class="badge" id="rBadge">
+                  <span class="b" id="bDot" style="background: var(--ok)"></span>
+                  <span id="rEstadoTxt">Operativo</span>
+                </div>
+              </div>
+
+              <div class="rgrid">
+                <div class="kv"><div class="k">ID VISITA</div><div class="v" id="rId">—</div></div>
+                <div class="kv"><div class="k">FECHA / HORA</div><div class="v" id="rFecha">—</div></div>
+                <div class="kv"><div class="k">CLIENTE</div><div class="v" id="rCliente">—</div></div>
+                <div class="kv"><div class="k">SEDE</div><div class="v" id="rSede">—</div></div>
+                <div class="kv"><div class="k">CONTACTO</div><div class="v" id="rContacto">—</div></div>
+                <div class="kv"><div class="k">TÉCNICO</div><div class="v" id="rTecnico">—</div></div>
+                <div class="kv"><div class="k">EQUIPO / SISTEMA</div><div class="v" id="rEquipo">—</div></div>
+                <div class="kv"><div class="k">SERIE / ASSET</div><div class="v" id="rSerie">—</div></div>
+                <div class="kv" style="grid-column:1/-1"><div class="k">MOTIVO</div><div class="v" id="rMotivo">—</div></div>
+              </div>
+
+              <div class="section">
+                <h3>Diagnóstico</h3>
+                <p id="rDiag">—</p>
+              </div>
+
+              <div class="section">
+                <h3>Acciones realizadas</h3>
+                <ul id="rAcciones"><li>—</li></ul>
+              </div>
+
+              <div class="section">
+                <h3>Materiales / Repuestos</h3>
+                <ul id="rMat"><li>—</li></ul>
+              </div>
+
+              <div class="section">
+                <h3>Estado final y tiempo</h3>
+                <p><b>Estado:</b> <span id="rEstado2">Operativo</span> · <b>Tiempo:</b> <span id="rTiempo">—</span></p>
+              </div>
+
+              <div class="section">
+                <h3>Recomendaciones / Pendientes</h3>
+                <p id="rRec">—</p>
+              </div>
+
+              <div class="section" id="rFotosSec" style="display:none;">
+                <h3>Evidencias (Antes / Después)</h3>
+                <div class="thumbs" id="rFotos"></div>
+              </div>
+
+              <p class="sub" style="margin-top:12px;">Generado desde Tech Support Report Builder · <?= new Date().toISOString() ?></p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ========= util =========
+    const $ = (id) => document.getElementById(id);
+    const escapeHtml = (s="") => String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+
+    function fmtDate(dtLocalValue){
+      if(!dtLocalValue) return "—";
+      // dtLocalValue: "2025-12-23T08:10"
+      const d = new Date(dtLocalValue);
+      if (isNaN(d.getTime())) return dtLocalValue;
+      return d.toLocaleString("es-PE", { dateStyle:"medium", timeStyle:"short" });
+    }
+
+    function statusColor(status){
+      if(status === "Operativo") return { dot: "var(--ok)", cls:"ok" };
+      if(status === "Observación") return { dot: "var(--warn)", cls:"warn" };
+      return { dot: "var(--bad)", cls:"bad" };
+    }
+
+    // ========= state =========
+    const state = {
+      acciones: [],
+      materiales: [],
+      fotos: { antes:null, despues:null } // dataURLs
+    };
+
+    // ========= UI bindings =========
+    const fields = ["id","fecha","cliente","sede","contacto","tecnico","equipo","serie","motivo","diagnostico","recomendaciones","estado","tiempo"];
+    fields.forEach(f => $(f).addEventListener("input", render));
+    $("estado").addEventListener("change", render);
+
+    // chips status
+    document.querySelectorAll(".chip").forEach(chip=>{
+      chip.addEventListener("click", ()=>{
+        $("estado").value = chip.dataset.status;
+        render();
+      });
+    });
+
+    // Add acciones
+    $("addAccion").addEventListener("click", ()=>{
+      const txt = $("accionTxt").value.trim();
+      if(!txt) return;
+      state.acciones.push({ t: txt, ts: new Date().toLocaleTimeString("es-PE",{hour:"2-digit",minute:"2-digit"}) });
+      $("accionTxt").value = "";
+      render();
+    });
+
+    // Add materiales
+    $("addMat").addEventListener("click", ()=>{
+      const nom = $("matNom").value.trim();
+      const cant = parseInt($("matCant").value,10);
+      if(!nom || !cant || cant < 1) return;
+      state.materiales.push({ nom, cant });
+      $("matNom").value = "";
+      $("matCant").value = "1";
+      render();
+    });
+
+    // fotos
+    function fileToDataURL(file){
+      return new Promise((res, rej)=>{
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    $("fotoAntes").addEventListener("change", async (e)=>{
+      const file = e.target.files?.[0];
+      state.fotos.antes = file ? await fileToDataURL(file) : null;
+      render();
+    });
+    $("fotoDespues").addEventListener("change", async (e)=>{
+      const file = e.target.files?.[0];
+      state.fotos.despues = file ? await fileToDataURL(file) : null;
+      render();
+    });
+
+    // Buttons
+    $("btnPrint").addEventListener("click", ()=>{
+      // asegura preview actualizado
+      render();
+      window.print(); // el usuario "Guardar como PDF"
+    });
+
+    $("btnClear").addEventListener("click", ()=>{
+      fields.forEach(f=>{
+        if($(f).tagName === "SELECT") $(f).value = "Operativo";
+        else $(f).value = "";
+      });
+      state.acciones = [];
+      state.materiales = [];
+      state.fotos = { antes:null, despues:null };
+      $("fotoAntes").value = "";
+      $("fotoDespues").value = "";
+      render();
+    });
+
+    $("btnDemo").addEventListener("click", ()=>{
+      $("id").value = "VS-2025-0143";
+      const now = new Date();
+      // set datetime-local
+      const pad = (n)=> String(n).padStart(2,"0");
+      $("fecha").value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      $("cliente").value = "Smart Display Peru";
+      $("sede").value = "Miraflores — Showroom";
+      $("contacto").value = "María P. · Admin · 9XX XXX XXX";
+      $("tecnico").value = "Jefferson";
+      $("equipo").value = "Pantalla LED P2.5 + NovaStar TB";
+      $("serie").value = "TB20-PL-8893";
+      $("motivo").value = "Pantalla sin señal (intermitente) + ajuste de resolución";
+      $("diagnostico").value = "Se detectó pérdida de enlace LAN intermitente y configuración de salida no alineada a 1024×576. Se validó alimentación y reinicio controlado.";
+      $("recomendaciones").value = "Revisar cableado estructurado y reemplazar patch cord. Programar mantenimiento preventivo mensual y verificación de temperatura.";
+      $("estado").value = "Operativo";
+      $("tiempo").value = "1h 20m";
+      state.acciones = [
+        {t:"Reemplazo de cable LAN (Cat6) y fijación de conectores", ts:"08:12"},
+        {t:"Reinicio de controlador y verificación de salida HDMI", ts:"08:25"},
+        {t:"Ajuste de resolución a 1024×576 y prueba de contenido", ts:"08:33"}
+      ];
+      state.materiales = [
+        {nom:"Cable LAN Cat6 (1.5m)", cant:1},
+        {nom:"Bridas / cinta aislante", cant:3}
+      ];
+      render();
+    });
+
+    // clock
+    setInterval(()=>{
+      $("clock").textContent = `SYS · ${new Date().toLocaleString("es-PE",{weekday:"short", hour:"2-digit", minute:"2-digit"})}`.toUpperCase();
+    }, 1000);
+
+    // ========= render =========
+    function render(){
+      // render lists in input panel
+      const acc = $("accionesList");
+      acc.innerHTML = "";
+      state.acciones.forEach((a, idx)=>{
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="icon">A</div>
+          <div class="meta">
+            <div class="t">${escapeHtml(a.t)}</div>
+            <div class="s">TS ${escapeHtml(a.ts || "")}</div>
+          </div>
+          <button class="x" title="Eliminar">✕</button>
+        `;
+        el.querySelector("button").addEventListener("click", ()=>{
+          state.acciones.splice(idx,1);
+          render();
+        });
+        acc.appendChild(el);
+      });
+
+      const ml = $("matList");
+      ml.innerHTML = "";
+      state.materiales.forEach((m, idx)=>{
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="icon">M</div>
+          <div class="meta">
+            <div class="t">${escapeHtml(m.nom)}</div>
+            <div class="s">Cantidad: ${escapeHtml(m.cant)}</div>
+          </div>
+          <button class="x" title="Eliminar">✕</button>
+        `;
+        el.querySelector("button").addEventListener("click", ()=>{
+          state.materiales.splice(idx,1);
+          render();
+        });
+        ml.appendChild(el);
+      });
+
+      // thumbs
+      const thumbs = $("thumbs");
+      thumbs.innerHTML = "";
+      if(state.fotos.antes){
+        thumbs.appendChild(makeThumb(state.fotos.antes, "ANTES"));
+      }
+      if(state.fotos.despues){
+        thumbs.appendChild(makeThumb(state.fotos.despues, "DESPUÉS"));
+      }
+
+      // preview mapping
+      $("rId").textContent = $("id").value.trim() || "—";
+      $("rFecha").textContent = fmtDate($("fecha").value);
+      $("rCliente").textContent = $("cliente").value.trim() || "—";
+      $("rSede").textContent = $("sede").value.trim() || "—";
+      $("rContacto").textContent = $("contacto").value.trim() || "—";
+      $("rTecnico").textContent = $("tecnico").value.trim() || "—";
+      $("rEquipo").textContent = $("equipo").value.trim() || "—";
+      $("rSerie").textContent = $("serie").value.trim() || "—";
+      $("rMotivo").textContent = $("motivo").value.trim() || "—";
+
+      $("rDiag").textContent = $("diagnostico").value.trim() || "—";
+      $("rRec").textContent = $("recomendaciones").value.trim() || "—";
+      $("rTiempo").textContent = $("tiempo").value.trim() || "—";
+
+      const est = $("estado").value;
+      $("rEstadoTxt").textContent = est;
+      $("rEstado2").textContent = est;
+      const sc = statusColor(est);
+      $("bDot").style.background = sc.dot;
+
+      // subtitle
+      const sub = [
+        $("cliente").value.trim(),
+        $("sede").value.trim(),
+        $("equipo").value.trim()
+      ].filter(Boolean).join(" · ");
+      $("rSub").textContent = sub || "—";
+
+      // preview actions list
+      const rAcc = $("rAcciones");
+      rAcc.innerHTML = "";
+      if(state.acciones.length){
+        state.acciones.forEach(a=>{
+          const li = document.createElement("li");
+          li.textContent = a.t;
+          rAcc.appendChild(li);
+        });
+      } else {
+        rAcc.innerHTML = "<li>—</li>";
+      }
+
+      const rMat = $("rMat");
+      rMat.innerHTML = "";
+      if(state.materiales.length){
+        state.materiales.forEach(m=>{
+          const li = document.createElement("li");
+          li.textContent = `${m.nom} (x${m.cant})`;
+          rMat.appendChild(li);
+        });
+      } else {
+        rMat.innerHTML = "<li>—</li>";
+      }
+
+      // photos in preview
+      const rf = $("rFotos");
+      rf.innerHTML = "";
+      const hasFotos = !!(state.fotos.antes || state.fotos.despues);
+      $("rFotosSec").style.display = hasFotos ? "block" : "none";
+      if(state.fotos.antes) rf.appendChild(makeThumb(state.fotos.antes, "ANTES"));
+      if(state.fotos.despues) rf.appendChild(makeThumb(state.fotos.despues, "DESPUÉS"));
+
+      // local sync indicator (solo visual)
+      $("sys").textContent = "LIVE · Preview";
+      $("autosave").textContent = "SYNC · Local";
+    }
+
+    function makeThumb(src, label){
+      const d = document.createElement("div");
+      d.className = "thumb";
+      d.innerHTML = `<span>${escapeHtml(label)}</span><img alt="${escapeHtml(label)}" />`;
+      d.querySelector("img").src = src;
+      return d;
+    }
+
+    // init defaults
+    (function init(){
+      // set now for datetime-local
+      const now = new Date();
+      const pad = (n)=> String(n).padStart(2,"0");
+      $("fecha").value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      $("id").value = `VS-${now.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
+      render();
+    })();
+  </script>
+</body>
+</html>
